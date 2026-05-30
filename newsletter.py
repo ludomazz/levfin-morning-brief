@@ -4,7 +4,7 @@ import resend
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"].strip())
 
 today = datetime.now(ZoneInfo("America/New_York"))
 date_str = today.strftime("%A, %B %d, %Y")
@@ -32,7 +32,7 @@ Use the web_search tool aggressively to pull yesterday's and overnight news. Cov
 Tone: terse, factual, Bloomberg-style. No fluff, no hedging. Use numbers and names. Lead with the most important item of the day. Keep the whole brief under 800 words. End with a "Sources" section listing the URLs you cited (just URLs, no commentary)."""
 
 resp = client.messages.create(
-    model="claude-opus-4-5",  # swap to claude-sonnet-4-5 if you want it cheaper
+    model="claude-opus-4-7",  # swap to claude-sonnet-4-5 if you want it cheaper
     max_tokens=4096,
     tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 10}],
     system=SYSTEM,
@@ -48,10 +48,10 @@ body = "\n".join(b.text for b in resp.content if b.type == "text")
 # Convert to simple HTML
 html = "<pre style='font-family: -apple-system, sans-serif; white-space: pre-wrap; font-size: 14px; line-height: 1.5;'>" + body + "</pre>"
 
-resend.api_key = os.environ["RESEND_API_KEY"]
+resend.api_key = os.environ["RESEND_API_KEY"].strip()
 resend.Emails.send({
     "from": "LevFin Brief <onboarding@resend.dev>",
-    "to": [os.environ["TO_EMAIL"]],
+    "to": [os.environ["TO_EMAIL"].strip()],
     "subject": f"LevFin Morning Brief — {today.strftime('%b %d')}",
     "html": html,
 })
